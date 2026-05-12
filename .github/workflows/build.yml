@@ -14,28 +14,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: >
-            make
-            nasm
-            mingw-w64-x86_64-gcc
+      - name: Install NASM
+        run: choco install nasm -y
+
+      - name: Download i686-elf Toolchain
+        shell: powershell
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://github.com/lordmilko/i686-elf-tools/releases/download/13.2.0/i686-elf-tools-windows.zip" `
+            -OutFile "toolchain.zip"
+
+          Expand-Archive toolchain.zip -DestinationPath toolchain
+
+          echo "$pwd\toolchain\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Verify Compiler
+        run: |
+          i686-elf-gcc --version
+          i686-elf-objcopy --version
+          nasm -v
 
       - name: Build
-        shell: msys2 {0}
+        shell: bash
         run: |
-          make compiler=gcc objcopy=objcopy
+          make
 
-      - name: Upload artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: BrenmaxOS
           path: BrenmaxOS.img
 
-      - name: Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: release-${{ github.run_number }}
