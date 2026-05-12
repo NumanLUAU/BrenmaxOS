@@ -21,11 +21,11 @@ void ClearConsole(){
 
 uint32_t kstrlen(const char* s) {
     if (!s) return 0;
-    uint32_t len = 0;
-    while (s[len] != '\0') {
-        len++;
+    const char *p = s;
+    while (*p != '\0') {
+        p++;
     }
-    return len;
+    return p-s;
 }
 void ConsoleLoop() {
     if(started == 0){
@@ -183,7 +183,7 @@ void ConsoleLoop() {
                     ConsoleNewLine();
                     printToConsole(20, "Done ---------------");
                     ConsoleNewLine();
-                    printToConsole(2, "no"); 
+                    printToConsole(512, (char*)0x00320000); 
                 } 
                 else {
                     ConsoleNewLine();
